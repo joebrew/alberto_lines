@@ -34,7 +34,8 @@ df <- gather(df,
 df$day <- as.numeric(gsub('Day ', '', df$day))
 
 # Plot
-ggplot(data = df,
+ggplot(data = df %>%
+         filter(day <= 7),
        aes(x = day,
            y = value,
            group = id)) +
@@ -45,3 +46,10 @@ ggplot(data = df,
   xlab('Day') +
   ylab('')
 ggsave('plot.pdf')
+
+# Statistical test for lab vs clinic
+fit <- lm(value ~ day + category,
+          data = df %>%
+            filter(day <= 7,
+                   category != 'All TB cases'))
+summary(fit)
