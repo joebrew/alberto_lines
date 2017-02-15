@@ -25,6 +25,8 @@ for (i in 1:length(unique_categories)){
                     df)
   }
 }
+df <- df %>%
+  filter(!is.na(`Day 0`))
 
 # Gather
 df <- gather(df,
@@ -40,16 +42,43 @@ ggplot(data = df %>%
            y = value,
            group = id)) +
   geom_line(lwd = 0.1,
-            alpha = 0.5) +
-  facet_wrap(~category, ncol = 1) +
+            alpha = 0.3) +
+  facet_wrap(~category, ncol = 3) +
   theme_bw() +
   xlab('Day') +
-  ylab('')
+  ylab('') +
+  theme(strip.text.x = element_text(size = 6, 
+                                    colour = "black", 
+                                    angle = 0))
+
 ggsave('plot.pdf')
 
 # Statistical test for lab vs clinic
-fit <- lm(value ~ day + category,
-          data = df %>%
-            filter(day <= 7,
-                   category != 'All TB cases'))
+model_data <- df %>%
+  filter(day <= 7,
+         category != 'All TB cases') %>%
+  arrange(day) %>%
+  mutate(cat_id = paste0(category, '_', id)) %>%
+  group_by(cat_id) %>%
+  summarise(reduction = value[day == 0] - value[day == 7],
+            category = first(category))
+
+ggplot(data = model_data,
+       aes(x= reduction,
+           group = category,
+           fill = category)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'darkgreen')) +
+  labs(x = 'Reduction',
+       y = 'Density',
+       title = 'Reduction from day 0 to 7')
+
+t.test(x = model_data$reduction[model_data$category == 'Clinically-diagnosed cases'],
+       y = model_data$reduction[model_data$category == 'Lab-confirmed cases'])
+
+fit <- lm(reduction ~  category,
+          data = model_data)
 summary(fit)
