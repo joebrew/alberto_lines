@@ -49,7 +49,9 @@ ggplot(data = df %>%
   ylab('') +
   theme(strip.text.x = element_text(size = 6, 
                                     colour = "black", 
-                                    angle = 0))
+                                    angle = 0)) +
+  scale_x_continuous(name = 'Day',
+                     breaks = c(0,7))
 
 ggsave('plot.pdf')
 
