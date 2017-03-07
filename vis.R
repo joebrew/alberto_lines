@@ -51,9 +51,30 @@ ggplot(data = df %>%
                                     colour = "black", 
                                     angle = 0)) +
   scale_x_continuous(name = 'Day',
-                     breaks = c(0,7))
+                     breaks = c(0,7)) +
+  ylab('Serum IP-10 (pg/ml)')
 
 ggsave('plot.pdf')
+
+# Plot
+ggplot(data = df,
+       aes(x = day,
+           y = value,
+           group = id)) +
+  geom_line(lwd = 0.1,
+            alpha = 0.3) +
+  facet_wrap(~category, ncol = 3) +
+  theme_bw() +
+  xlab('Day') +
+  ylab('') +
+  theme(strip.text.x = element_text(size = 6, 
+                                    colour = "black", 
+                                    angle = 0)) +
+  scale_x_continuous(name = 'Day',
+                     breaks = c(0,7, 60)) +
+  ylab('Serum IP-10 (pg/ml)')
+
+ggsave('plot60.pdf')
 
 # Statistical test for lab vs clinic
 model_data <- df %>%
@@ -76,6 +97,19 @@ ggplot(data = model_data,
                     values = c('darkorange', 'darkgreen')) +
   labs(x = 'Reduction',
        y = 'Density',
+       title = 'Reduction from day 0 to 7')
+
+ggplot(data = model_data,
+       aes(x= reduction,
+           group = category,
+           fill = category)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  scale_fill_manual(name = '',
+                    values = c('darkorange', 'darkgreen')) +
+  labs(x = 'Reduction',
+       y = 'Cases',
        title = 'Reduction from day 0 to 7')
 
 t.test(x = model_data$reduction[model_data$category == 'Clinically-diagnosed cases'],
