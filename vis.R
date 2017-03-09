@@ -76,6 +76,36 @@ ggplot(data = df,
 
 ggsave('plot60.pdf')
 
+# Make a 6 panel plot
+p6 <- 
+  bind_rows(
+    df %>% 
+      filter(day <= 7) %>%
+      mutate(category = paste0(category, ' 0-7 days')),
+    df %>% 
+      mutate(category = paste0(category, ' 0-60 days'))
+  )
+ggplot(data = p6,
+       aes(x = day,
+           y = value,
+           group = id)) +
+  geom_line(lwd = 0.1,
+            alpha = 0.3) +
+  facet_wrap(~category, ncol = 2, 
+             scales = 'free_x') +
+  theme_bw() +
+  xlab('Day') +
+  ylab('') +
+  theme(strip.text.x = element_text(size = 6, 
+                                    colour = "black", 
+                                    angle = 0)) +
+  scale_x_continuous(name = 'Day',
+                     breaks = c(0,7, 60)) +
+  ylab('Serum IP-10 (pg/ml)')
+
+ggsave('plot6panel.pdf')
+
+
 # Statistical test for lab vs clinic
 model_data <- df %>%
   filter(day <= 7,
@@ -112,6 +142,21 @@ ggplot(data = model_data,
        y = 'Cases',
        title = 'Reduction from day 0 to 7')
 
+# Make boxplot
+ggplot(data = model_data,
+       aes(x= category,
+           y = reduction)) +
+  geom_boxplot(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  labs(x = 'Category',
+       y = 'Reduction in serum IP-10 (pg/ml)',
+       title = 'Reduction from day 0 to 7')
+ggsave('boxplot.pdf')
+
+
+model_data %>% group_by(category) %>% summarise(mean(reduction)) %>%
+  .$`mean(reduction)` %>% diff
 t.test(x = model_data$reduction[model_data$category == 'Clinically-diagnosed cases'],
        y = model_data$reduction[model_data$category == 'Lab-confirmed cases'])
 
